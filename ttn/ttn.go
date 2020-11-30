@@ -18,7 +18,7 @@ var (
 func CreateConnection() ttnsdk.Client {
 
 	if len(TTN_ACCESS_KEY) == 0 {
-		TTN_ACCESS_KEY = "ttn-account-v2.WgAmD0gx5-aAJyNowOTOsX3f-yDA0NTxJ_QnNUAN2CI"
+		log.Fatal("No TTN_ACCESS_KEY present ...\n")
 	}
 
 	if len(TTN_APP_ID) == 0 {
