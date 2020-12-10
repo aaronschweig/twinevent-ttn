@@ -6,22 +6,28 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/aaronschweig/twinevent-ttn/config"
 	"github.com/aaronschweig/twinevent-ttn/mqtt"
 	"github.com/aaronschweig/twinevent-ttn/ttn"
 )
 
 func main() {
 
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	conf := config.NewConfig()
 
-	client := mqtt.Start()
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, os.Kill, syscall.SIGTERM)
+
+	ttnService := ttn.NewTTN(conf)
+	ms := mqtt.NewMqttService(ttnService)
+
+	client := ms.Start()
 	defer client.Disconnect(250)
 
-	ttnClient := ttn.CreateConnection()
+	ttnClient := ttnService.CreateConnection()
 	defer ttnClient.Close()
 
-	token := client.Subscribe("aaron/+", byte(0), mqtt.RegistrationHandler)
+	token := client.Subscribe("registration/+", 0b0, ms.RegistrationHandler)
 
 	if token.Wait() && token.Error() != nil {
 		fmt.Println(token.Error())

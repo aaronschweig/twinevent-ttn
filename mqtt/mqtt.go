@@ -17,7 +17,15 @@ var (
 	reg           = regexp.MustCompile(`([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$`)
 )
 
-func Start() MQTT.Client {
+type MqttService struct {
+	ttn *ttn.TTN
+}
+
+func NewMqttService(ttn *ttn.TTN) *MqttService {
+	return &MqttService{ttn}
+}
+
+func (ms *MqttService) Start() MQTT.Client {
 
 	if len(MQTT_BROKER) == 0 {
 		MQTT_BROKER = "mq.jreichwald.de:1883"
@@ -31,7 +39,11 @@ func Start() MQTT.Client {
 		MQTT_PASSWORD = "twinevent"
 	}
 
-	opt := MQTT.NewClientOptions().AddBroker(MQTT_BROKER).SetUsername(MQTT_USER).SetPassword(MQTT_PASSWORD)
+	opt := MQTT.NewClientOptions().
+		AddBroker(MQTT_BROKER).
+		SetUsername(MQTT_USER).
+		SetPassword(MQTT_PASSWORD).
+		SetAutoReconnect(true)
 
 	client := MQTT.NewClient(opt)
 
@@ -42,7 +54,7 @@ func Start() MQTT.Client {
 	return client
 }
 
-func RegistrationHandler(c MQTT.Client, m MQTT.Message) {
+func (ms *MqttService) RegistrationHandler(c MQTT.Client, m MQTT.Message) {
 	topic := m.Topic()
 
 	match := reg.FindAllString(topic, -1)
@@ -58,15 +70,15 @@ func RegistrationHandler(c MQTT.Client, m MQTT.Message) {
 
 	log.Printf("Extracted MAC-Adress %s", mac)
 
-	device, err := ttn.Get(mac)
+	device, err := ms.ttn.Get(mac)
 
 	if err != nil {
 		log.Printf("%s\n", err)
 		log.Printf("Creating Device for %s\n", mac)
 
-		ttn.RegisterDevice(mac, "")
+		ms.ttn.RegisterDevice(mac, "")
 
-		device, _ = ttn.Get(mac)
+		device, _ = ms.ttn.Get(mac)
 	}
 
 	// TODO: Respond with config.json
