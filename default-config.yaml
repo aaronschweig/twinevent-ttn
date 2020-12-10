@@ -1,0 +1,21 @@
+# Konfigurationsinformationen für die MQTT-Connection der Device-Registration
+mqtt:
+  # URL inkl. Port des MQTT-Brokers
+  host: 'mq.jreichwald.de:1883'
+  # Nutzername für den Broker
+  user: '<user>'
+  # Passwort für den Broker
+  password: '<pwd>'
+# Konfigurationsinformationen für TheThingsNetwork (TTN) diese können von https://console.thethingsnetwork.org/applications/ erhalten werden
+ttn:
+  # AppId (Name der Applikation im TTN)
+  app_id: '<appId>'
+  # Acces-Key der Applikation, mithilfe derer administrative Aufgaben erledigt werden können
+  access_key: '<key>'
+  # Application EUI. Muss im Hexformat vorliegen. Der String darf auch keine Leerzeichen enthalten da von der TTN-SDK der Regex /^[[:xdigit:]]$/ verwendet wird
+  app_eui: '<eui>'
+# Konfiguration für Ditto. Diese Infos werden genutzt um gewisse Templates auszufüllen
+ditto:
+  host: 'http://localhost:80'
+  connection_name: 'ttn-connection'
+  namespace: 'de.aaronschweig.ttn.demo'

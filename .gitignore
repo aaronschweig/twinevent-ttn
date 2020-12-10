@@ -2,6 +2,10 @@
 # Created by https://www.toptal.com/developers/gitignore/api/go,vscode,macos
 # Edit at https://www.toptal.com/developers/gitignore?templates=go,vscode,macos
 
+# CUSTOM
+
+.default-config.yaml
+
 ### Go ###
 # Binaries for programs and plugins
 *.exe
