@@ -1,0 +1,48 @@
+{
+  "targetActorSelection": "/system/sharding/connection",
+  "headers": {
+    "aggregate": false
+  },
+  "piggybackCommand": {
+    "type": "connectivity.commands:createConnection",
+    "connection": {
+      "id": "ttn-connection-{{.TTN.AppID}}",
+      "name": "TTN-MQTT",
+      "connectionType": "mqtt",
+      "connectionStatus": "open",
+      "uri": "tcp://{{.TTN.AppID}}:{{.TTN.AccessKey}}@eu.thethings.network:1883",
+      "failoverEnabled": true,
+      "clientCount": 1,
+      "validateCertificates": false,
+      "sources": [
+        {
+          "addresses": ["{{.TTN.AppID}}/devices/+/up"],
+          "consumerCount": 1,
+          "qos": 0,
+          "authorizationContext": [
+            "pre-authenticated:{{.Ditto.ConnectionName}}"
+          ],
+          "enforcement": {
+            "input": "{{`{{ source:address }}`}}",
+            "filters": ["{{.TTN.AppID}}/devices/{{`{{ thing:name }}`}}/up"]
+          },
+          "replyTarget": {
+            "enabled": false
+          },
+          "payloadMapping": ["ttn-demo-mapping"]
+        }
+      ],
+      "mappingDefinitions": {
+        "ttn-demo-mapping": {
+          "mappingEngine": "JavaScript",
+          "options": {
+            "incomingScript": "function mapToDittoProtocolMsg(headers, textPayload, bytePayload, contentType) {\n  let ttnJson = JSON.parse(textPayload);\n  let deviceId = ttnJson['dev_id'];\n  let payloadFields = ttnJson['payload_fields'];\n\n  let attributesObj = {\n    hardwareSerial: ttnJson['hardware_serial'],\n    ttnCounter: ttnJson['counter'],\n  };\n\n  let featuresObj = {\n    temperature: {\n      properties: {\n        value: payloadFields['short'],\n      },\n    },\n  };\n\n  let thing = {\n    attributes: attributesObj,\n    features: featuresObj,\n  };\n\n  let dittoHeaders = {\n    'response-required': false,\n    'If-Match': '*',\n  };\n\n  return Ditto.buildDittoProtocolMsg(\n    {{ enquote .Ditto.Namespace }},\n    deviceId,\n    'things',\n    'twin',\n    'commands',\n    'modify',\n    '/',\n    dittoHeaders,\n    thing\n  );\n}",
+            "outgoingScript": "function mapFromDittoProtocolMsg() { return null; }",
+            "loadBytebufferJS": "false",
+            "loadLongJS": "false"
+          }
+        }
+      }
+    }
+  }
+}

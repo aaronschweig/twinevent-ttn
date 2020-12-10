@@ -18,10 +18,10 @@ var (
 )
 
 type MqttService struct {
-	ttn *ttn.TTN
+	ttn *ttn.TTNService
 }
 
-func NewMqttService(ttn *ttn.TTN) *MqttService {
+func NewMqttService(ttn *ttn.TTNService) *MqttService {
 	return &MqttService{ttn}
 }
 

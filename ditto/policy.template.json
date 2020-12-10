@@ -1,0 +1,39 @@
+{
+  "policyId": "{{.Ditto.Namespace}}:twin-policy",
+  "entries": {
+    "USER": {
+      "subjects": {
+        "nginx:ditto": {
+          "type": "basic auth user authenticated via nginx"
+        }
+      },
+      "resources": {
+        "thing:/": {
+          "grant": ["READ", "WRITE"],
+          "revoke": []
+        },
+        "policy:/": {
+          "grant": ["READ", "WRITE"],
+          "revoke": []
+        },
+        "message:/": {
+          "grant": ["READ", "WRITE"],
+          "revoke": []
+        }
+      }
+    },
+    "TTN": {
+      "subjects": {
+        "pre-authenticated:{{.Ditto.ConnectionName}}": {
+          "type": "used in the connections authorizationContext to the TTN MQTT"
+        }
+      },
+      "resources": {
+        "thing:/": {
+          "grant": ["WRITE"],
+          "revoke": []
+        }
+      }
+    }
+  }
+}

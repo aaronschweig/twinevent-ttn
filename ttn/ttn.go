@@ -9,19 +9,19 @@ import (
 	"github.com/aaronschweig/twinevent-ttn/config"
 )
 
-type TTN struct {
+type TTNService struct {
 	config        *config.Config
 	deviceManager ttnsdk.DeviceManager
 }
 
-func NewTTN(cfg *config.Config) *TTN {
-	return &TTN{
+func NewTTNService(cfg *config.Config) *TTNService {
+	return &TTNService{
 		cfg,
 		nil,
 	}
 }
 
-func (ttn *TTN) CreateConnection() ttnsdk.Client {
+func (ttn *TTNService) CreateConnection() ttnsdk.Client {
 
 	ttnConfig := ttnsdk.NewCommunityConfig(ttn.config.TTN.AppID)
 
@@ -38,11 +38,11 @@ func (ttn *TTN) CreateConnection() ttnsdk.Client {
 	return client
 }
 
-func (ttn *TTN) Get(id string) (*ttnsdk.Device, error) {
+func (ttn *TTNService) Get(id string) (*ttnsdk.Device, error) {
 	return ttn.deviceManager.Get(id)
 }
 
-func (ttn *TTN) RegisterDevice(mac string, description string) {
+func (ttn *TTNService) RegisterDevice(mac string, description string) {
 
 	device := new(ttnsdk.Device)
 	device.AppID = ttn.config.TTN.AppID

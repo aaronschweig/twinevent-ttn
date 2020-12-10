@@ -2,13 +2,13 @@ package config
 
 import (
 	"flag"
-	"fmt"
 	"os"
 
 	"github.com/TheThingsNetwork/ttn/core/types"
 	"gopkg.in/yaml.v2"
 )
 
+// Type-Alias for ttnsdk.AppEUI
 type EUI types.AppEUI
 
 type Config struct {
@@ -22,14 +22,19 @@ type Config struct {
 		AppID     string `yaml:"app_id"`
 		AppEUI    EUI    `yaml:"app_eui"`
 	} `yaml:"ttn"`
+	Ditto struct {
+		Host           string `yaml:"host"`
+		Namespace      string `yaml:"namespace"`
+		ConnectionName string `yaml:"connection_name"`
+	} `yaml:"ditto"`
 }
 
+// Custom Transform-Function for app_eui to get directy a types.AppUI
 func (e *EUI) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var eui string
 
 	err := unmarshal(&eui)
 
-	fmt.Println(err)
 	if err != nil {
 		return err
 	}
@@ -45,7 +50,7 @@ func (e *EUI) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-func NewConfig() *Config {
+func NewConfig() (*Config, error) {
 	var path string
 	flag.StringVar(&path, "config", "./default-config.yaml", "path to config file")
 
@@ -59,7 +64,9 @@ func NewConfig() *Config {
 	decoder := yaml.NewDecoder(file)
 
 	var config Config
-	decoder.Decode(&config)
+	if err = decoder.Decode(&config); err != nil {
+		return nil, err
+	}
 
-	return &config
+	return &config, nil
 }
