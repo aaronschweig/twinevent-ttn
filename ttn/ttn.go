@@ -1,23 +1,24 @@
 package ttn
 
 import (
-	"log"
-
 	ttnsdk "github.com/TheThingsNetwork/go-app-sdk"
 	"github.com/TheThingsNetwork/go-utils/random"
 	"github.com/TheThingsNetwork/ttn/core/types"
 	"github.com/aaronschweig/twinevent-ttn/config"
+	"github.com/hashicorp/go-hclog"
 )
 
 type TTNService struct {
 	config        *config.Config
 	deviceManager ttnsdk.DeviceManager
+	log           hclog.Logger
 }
 
-func NewTTNService(cfg *config.Config) *TTNService {
+func NewTTNService(cfg *config.Config, log hclog.Logger) *TTNService {
 	return &TTNService{
 		cfg,
 		nil,
+		log,
 	}
 }
 
@@ -32,7 +33,7 @@ func (ttn *TTNService) CreateConnection() ttnsdk.Client {
 	ttn.deviceManager = devices
 
 	if err != nil {
-		log.Fatalf("%s: could not get device manager", ttn.config.TTN.AppID)
+		ttn.log.Error("Could not get device manager", "error", err)
 	}
 
 	return client
@@ -60,6 +61,6 @@ func (ttn *TTNService) RegisterDevice(mac string, description string) {
 	err := ttn.deviceManager.Set(device)
 
 	if err != nil {
-		log.Fatalf("%s: Could not create Device %#v", ttn.config.TTN.AppID, err)
+		ttn.log.Error("Could not create Device.", "error", err)
 	}
 }

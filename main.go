@@ -29,9 +29,9 @@ func main() {
 
 	// Initialize Services
 	log.Info("Initializing Services...")
-	ttnService := ttn.NewTTNService(conf)
-	ms := mqtt.NewMqttService(ttnService, conf)
+	ttnService := ttn.NewTTNService(conf, log)
 	ds := ditto.NewDittoService(conf)
+	ms := mqtt.NewMqttService(ttnService, ds, log, conf)
 
 	// Start MQTT
 	log.Info("Connecting to MQTT-Broker...")
@@ -44,7 +44,7 @@ func main() {
 	defer ttnClient.Close()
 
 	log.Info("Setting up Subscription...")
-	token := client.Subscribe("registration/+", 0b0, ms.RegistrationHandler)
+	token := client.Subscribe("registration/+", 0b10, ms.RegistrationHandler)
 
 	if token.Wait() && token.Error() != nil {
 		fmt.Println(token.Error())

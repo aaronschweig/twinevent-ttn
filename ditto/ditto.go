@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"text/template"
 
+	ttnsdk "github.com/TheThingsNetwork/go-app-sdk"
 	"github.com/aaronschweig/twinevent-ttn/config"
 )
 
@@ -20,6 +22,26 @@ func NewDittoService(cfg *config.Config) *DittoService {
 	}
 }
 
+func (ds *DittoService) CreateDT(device *ttnsdk.Device) error {
+	url := fmt.Sprintf("%s/api/2/things/%s:%s", ds.config.Ditto.Host, ds.config.Ditto.Namespace, device.DevID)
+	body := fmt.Sprintf(`{"policyId":"%s:%s"}`, ds.config.Ditto.Namespace, "twin-policy")
+	req, err := http.NewRequest(http.MethodPut, url, strings.NewReader(body))
+
+	if err != nil {
+		return err
+	}
+
+	req.Header.Add("Content-Type", "application/json")
+	req.SetBasicAuth("ditto", "ditto") // TODO:
+
+	_, err = http.DefaultClient.Do(req)
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (ds *DittoService) CreateTTNConnection() error {
 
 	funcsMap := template.FuncMap{
@@ -27,6 +49,8 @@ func (ds *DittoService) CreateTTNConnection() error {
 			return fmt.Sprintf("'%s'", arg)
 		},
 	}
+
+	// CREATE CONNECTION
 
 	configTmpl := template.Must(template.New("connection.template.json").Funcs(funcsMap).ParseFiles("./ditto/connection.template.json"))
 
@@ -53,7 +77,7 @@ func (ds *DittoService) CreateTTNConnection() error {
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return fmt.Errorf("Ressource could not be created. Got Status Code %d", res.StatusCode)
+		return fmt.Errorf("Connection could not be created. Got Status Code %d", res.StatusCode)
 	}
 
 	var r map[string]interface{}
@@ -67,7 +91,35 @@ func (ds *DittoService) CreateTTNConnection() error {
 	status := int(r["status"].(float64))
 
 	if !(status == http.StatusConflict || status == http.StatusCreated) {
-		return fmt.Errorf("Ressource could not be created. Got Status Code %d.\n Description: %s", status, r["description"])
+		return fmt.Errorf("Connection could not be created. Got Status Code %d.\n Description: %s", status, r["description"])
+	}
+
+	// CREATE POLICY
+	policyTmpl := template.Must(template.New("policy.template.json").Funcs(funcsMap).ParseFiles("./ditto/policy.template.json"))
+
+	err = policyTmpl.Execute(&buffer, ds.config)
+
+	if err != nil {
+		return err
+	}
+
+	req, err = http.NewRequest(http.MethodPut, ds.config.Ditto.Host+"/api/2/policies/"+ds.config.Ditto.Namespace+":twin-policy", &buffer)
+
+	if err != nil {
+		return err
+	}
+
+	req.Header.Add("Content-Type", "application/json")
+	req.SetBasicAuth("ditto", "ditto") // TODO:
+
+	res, err = http.DefaultClient.Do(req)
+
+	if err != nil {
+		return err
+	}
+
+	if !(res.StatusCode == http.StatusCreated || res.StatusCode == http.StatusNoContent) {
+		return fmt.Errorf("Policy could not be created. Got Status Code %d", res.StatusCode)
 	}
 
 	return nil
