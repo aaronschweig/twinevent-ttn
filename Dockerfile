@@ -18,7 +18,10 @@ RUN cp /build/main .
 FROM alpine
 
 COPY --from=builder /dist/main /
+COPY --from=builder /build/ditto/*.json /ditto/
 COPY --from=builder /build/default-config.yaml /default-config.yaml
 
 # Command to run
 ENTRYPOINT ["/main"]
+
+CMD ["-config", "./default-config.yaml"]
