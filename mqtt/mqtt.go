@@ -2,47 +2,33 @@ package mqtt
 
 import (
 	"log"
-	"os"
 	"regexp"
 	"strings"
 
+	"github.com/aaronschweig/twinevent-ttn/config"
 	"github.com/aaronschweig/twinevent-ttn/ttn"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 )
 
 var (
-	MQTT_BROKER   = os.Getenv("MQTT_BROKER")
-	MQTT_USER     = os.Getenv("MQTT_USER")
-	MQTT_PASSWORD = os.Getenv("MQTT_PASSWORD")
-	reg           = regexp.MustCompile(`([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$`)
+	reg = regexp.MustCompile(`([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$`)
 )
 
 type MqttService struct {
-	ttn *ttn.TTNService
+	ttn    *ttn.TTNService
+	config *config.Config
 }
 
-func NewMqttService(ttn *ttn.TTNService) *MqttService {
-	return &MqttService{ttn}
+func NewMqttService(ttn *ttn.TTNService, cfg *config.Config) *MqttService {
+	return &MqttService{ttn, cfg}
 }
 
 func (ms *MqttService) Start() MQTT.Client {
 
-	if len(MQTT_BROKER) == 0 {
-		MQTT_BROKER = "mq.jreichwald.de:1883"
-	}
-
-	if len(MQTT_USER) == 0 {
-		MQTT_USER = "twinevent"
-	}
-
-	if len(MQTT_PASSWORD) == 0 {
-		MQTT_PASSWORD = "twinevent"
-	}
-
 	opt := MQTT.NewClientOptions().
-		AddBroker(MQTT_BROKER).
-		SetUsername(MQTT_USER).
-		SetPassword(MQTT_PASSWORD).
+		AddBroker(ms.config.Mqtt.Host).
+		SetUsername(ms.config.Mqtt.User).
+		SetPassword(ms.config.Mqtt.Password).
 		SetAutoReconnect(true)
 
 	client := MQTT.NewClient(opt)

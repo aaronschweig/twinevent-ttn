@@ -30,7 +30,7 @@ func main() {
 	// Initialize Services
 	log.Info("Initializing Services...")
 	ttnService := ttn.NewTTNService(conf)
-	ms := mqtt.NewMqttService(ttnService)
+	ms := mqtt.NewMqttService(ttnService, conf)
 	ds := ditto.NewDittoService(conf)
 
 	// Start MQTT
