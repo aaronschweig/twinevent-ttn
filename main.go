@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -47,7 +46,7 @@ func main() {
 	token := client.Subscribe("registration/+", 0b10, ms.RegistrationHandler)
 
 	if token.Wait() && token.Error() != nil {
-		fmt.Println(token.Error())
+		log.Error("Could not subscribe", "error", token.Error())
 		os.Exit(1)
 	}
 
@@ -58,4 +57,5 @@ func main() {
 
 	log.Info("Running...")
 	<-c
+	os.Exit(0)
 }
