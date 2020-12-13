@@ -1,0 +1,15 @@
+version: '3.9'
+
+networks:
+  monitoring:
+  docker_default:
+    external: true
+
+services:
+  ttn-connector:
+    image: aaronschweig/twinevent-ttn
+    volumes:
+      - ./.default-config.yaml:/config.yaml:ro
+    networks:
+      - monitoring
+      - docker_default

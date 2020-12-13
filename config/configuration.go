@@ -27,6 +27,7 @@ type Config struct {
 		Namespace      string `yaml:"namespace"`
 		ConnectionName string `yaml:"connection_name"`
 	} `yaml:"ditto"`
+	MetricsEndpoint string `yaml:"metrics_endpoint"`
 }
 
 // Custom Transform-Function for app_eui to get directy a types.AppUI
@@ -52,7 +53,7 @@ func (e *EUI) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 func NewConfig() (*Config, error) {
 	var path string
-	flag.StringVar(&path, "config", "./default-config.yaml", "path to config file")
+	flag.StringVar(&path, "config", "./config.yaml", "path to config file")
 
 	flag.Parse()
 

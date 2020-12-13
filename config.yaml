@@ -19,3 +19,5 @@ ditto:
   host: 'http://localhost:80'
   connection_name: 'ttn-connection'
   namespace: 'de.aaronschweig.ttn.demo'
+# Valide URL wäre super!
+metrics_endpoint: '/metrics'

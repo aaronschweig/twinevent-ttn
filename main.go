@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -10,6 +11,7 @@ import (
 	"github.com/aaronschweig/twinevent-ttn/mqtt"
 	"github.com/aaronschweig/twinevent-ttn/ttn"
 	"github.com/hashicorp/go-hclog"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -53,6 +55,13 @@ func main() {
 	log.Info("Ensuring Ditto-TTN-Connection...")
 	if err = ds.CreateTTNConnection(); err != nil {
 		panic(err)
+	}
+
+	if len(conf.MetricsEndpoint) > 0 {
+		go func() {
+			http.Handle(conf.MetricsEndpoint, promhttp.Handler())
+			http.ListenAndServe(":2112", nil)
+		}()
 	}
 
 	log.Info("Running...")

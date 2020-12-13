@@ -8,5 +8,6 @@ require (
 	github.com/TheThingsNetwork/ttn/core/types v0.0.0-20190516112328-fcd38e2b9dc6
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/hashicorp/go-hclog v0.15.0
+	github.com/prometheus/client_golang v0.9.2
 	gopkg.in/yaml.v2 v2.2.2
 )
